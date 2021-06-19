@@ -1,0 +1,120 @@
+---
+- name: get all zones from DNS
+  uri:
+    url: https://dns.hetzner.com/api/v1/zones
+    method: GET
+    headers:
+      Auth-API-Token: "{{ api_token }}"
+      Content-Type: application/json; charset=utf-8
+  register: api_result
+
+# - name: print records
+#   debug:
+#     msg: "{{ api_result }}"
+
+- name: Find correct zone and register its id
+  set_fact:
+    zone_id: "{{ item.id }}"
+  loop: "{{ api_result.json.zones }}"
+  when: item.name == zone|string
+
+- name: get zone records from DNS
+  uri:
+    url: "https://dns.hetzner.com/api/v1/records?zone_id={{ zone_id }}"
+    method: GET
+    headers:
+      Auth-API-Token: "{{ api_token }}"
+      Content-Type: application/json; charset=utf-8
+  register: all_zone_records
+
+# - name: print records
+#   debug:
+#     msg: "{{ all_zone_records }}"
+
+- name: Find correct record and register its id
+  set_fact:
+    record_id: "{{ item.id }}"
+  loop: "{{ all_zone_records.json.records }}"
+  when: item.name == record_name|string and item.value == record_value|string and item.type == record_type|string
+
+# - name: print record id
+#   debug:
+#     msg: "{{ record_id }}"
+#   when: record_id is defined
+
+- name: create DNS record
+  uri:
+    url: "https://dns.hetzner.com/api/v1/records"
+    method: POST
+    body_format: json
+    body:
+      {
+        "name": "{{ record_name }}",
+        "ttl": "{{ record_ttl }}",
+        "type": "{{ record_type }}",
+        "value": "{{ record_value }}",
+        "zone_id": "{{ zone_id }}"
+      }
+    headers:
+      Auth-API-Token: "{{ api_token }}"
+      Content-Type: application/json; charset=utf-8
+  register: create_record_result
+  when:
+    - not record_delete
+    - record_id is not defined
+
+- name: print create_record_result
+  debug:
+    msg: "{{ create_record_result }}"
+  when:
+    - not record_delete
+    - create_record_result is defined
+
+- name: update record on DNS
+  uri:
+    url: "https://dns.hetzner.com/api/v1/records/{{ record_id }}"
+    method: PUT
+    body_format: json
+    body:
+      {
+        "name": "{{ record_name }}",
+        "ttl": "{{ record_ttl }}",
+        "type": "{{ record_type }}",
+        "value": "{{ record_value }}",
+        "zone_id": "{{ zone_id }}"
+      }
+    headers:
+      Auth-API-Token: "{{ api_token }}"
+      Content-Type: application/json; charset=utf-8
+  register: update_record_result
+  when:
+    - record_update
+    - not record_delete
+    - record_id is defined
+
+- name: print update_record_result
+  debug:
+    msg: "{{ update_record_result }}"
+  when:
+    - record_update
+    - not record_delete
+    - update_record_result is defined
+
+- name: delete record from DNS
+  uri:
+    url: "https://dns.hetzner.com/api/v1/records/{{ record_id }}"
+    method: DELETE
+    headers:
+      Auth-API-Token: "{{ api_token }}"
+      Content-Type: application/json; charset=utf-8
+  register: delete_record_result
+  when:
+    - record_delete
+    - record_id is defined
+
+- name: print delete_record_result
+  debug:
+    msg: "{{ delete_record_result }}"
+  when:
+    - record_delete
+    - delete_record_result is defined

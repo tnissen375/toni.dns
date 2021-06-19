@@ -1,0 +1,3 @@
+---
+- name: Tasks DNS Provider
+  import_tasks: "{{ dns_provider }}.yml"
