@@ -19,6 +19,7 @@
   when: item.name == zone|string
 
 - name: get zone records from DNS
+  when: zone_id is defined
   uri:
     url: "https://dns.hetzner.com/api/v1/records?zone_id={{ zone_id }}"
     method: GET
@@ -26,6 +27,11 @@
       Auth-API-Token: "{{ api_token }}"
       Content-Type: application/json; charset=utf-8
   register: all_zone_records
+
+- name: Zone not found
+  debug:
+    msg: searched for "{{ zone }}"
+  when: zone_id is not defined
 
 # - name: print records
 #   debug:
@@ -35,7 +41,7 @@
   set_fact:
     record_id: "{{ item.id }}"
   loop: "{{ all_zone_records.json.records }}"
-  when: item.name == record_name|string and item.value == record_value|string and item.type == record_type|string
+  when: all_zone_records is defined and item.name == record_name|string and item.value == record_value|string and item.type == record_type|string
 
 # - name: print record id
 #   debug:
@@ -109,6 +115,7 @@
       Content-Type: application/json; charset=utf-8
   register: delete_record_result
   when:
+    - zone_id is defined
     - record_delete
     - record_id is defined
 
