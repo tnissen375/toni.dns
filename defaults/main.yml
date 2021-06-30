@@ -6,6 +6,7 @@ record_ttl: 180
 record_type: A
 record_delete: false
 record_update: false    
+record_id: ''  #undefined is not possible on rerunable roles (from same role)
 
 # Mail
 #record_name: "@"
@@ -23,6 +24,7 @@ api_token: !vault |
           63373336313437373937303761393065386533396563303935373365376238303666643737306565
           3630646138383865336330616335373737613064303630303963
 
+hetzner_cloud_api_token:
 
 hetzner_rdns_flavor_cloud: true
 # RDNS dedicated & cloud
@@ -33,5 +35,5 @@ hetzner_ptr:
 
 # RDNS cloud service
 # ansible-galaxy collection install hetzner.hcloud // on ansible machine
-hetzner_server_name:
+hetzner_server_name: target
 hetzner_floating_ip: not used

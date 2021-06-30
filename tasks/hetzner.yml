@@ -41,17 +41,30 @@
 #   debug:
 #     msg: "{{ all_zone_records }}"
 
+# - name: debug
+#   debug:
+#     msg: '{{ all_zone_records }} {{ record_name }} {{ record_value }} {{ record_type }}'
+
+- name: set record_id to empty
+  set_fact:
+    record_id: ''
+
+#and record_value|string in item.value # TXT with special chars record ""
 - name: Find correct record and register its id
   set_fact:
     record_id: "{{ item.id }}"
   loop: "{{ all_zone_records.json.records }}"
-  when: all_zone_records is defined and item.name == record_name|string and item.value == record_value|string and item.type == record_type|string
+  when: all_zone_records is defined and item.name == record_name|string and item.type == record_type|string
   delegate_to: localhost
+
+- name: print record id
+  debug:
+    msg: "{{ record_id }}"
+  when: record_id != ""
 
 # - name: print record id
 #   debug:
-#     msg: "{{ record_id }}"
-#   when: record_id is defined
+#     msg: "name: {{ record_name }} ttl: {{ record_ttl }} type: {{ record_type }} value: {{ record_value }} zone_id {{ zone_id }}"
 
 - name: create DNS record
   uri:
@@ -72,16 +85,16 @@
   register: create_record_result
   when:
     - not record_delete
-    - record_id is not defined
+    - record_id == ''
   delegate_to: localhost
 
-- name: print create_record_result
-  debug:
-    msg: "{{ create_record_result }}"
-  when:
-    - not record_delete
-    - create_record_result is defined
-  delegate_to: localhost    
+# - name: print create_record_result
+#   debug:
+#     msg: "{{ create_record_result }}"
+#   when:
+#     - not record_delete
+#     - create_record_result is defined
+#   delegate_to: localhost    
 
 - name: update record on DNS
   uri:
@@ -103,17 +116,17 @@
   when:
     - record_update
     - not record_delete
-    - record_id is defined
+    - record_id!= ""
   delegate_to: localhost
 
-- name: print update_record_result
-  debug:
-    msg: "{{ update_record_result }}"
-  when:
-    - record_update
-    - not record_delete
-    - update_record_result is defined
-  delegate_to: localhost
+# - name: print update_record_result
+#   debug:
+#     msg: "{{ update_record_result }}"
+#   when:
+#     - record_update
+#     - not record_delete
+#     - update_record_result is defined
+#   delegate_to: localhost
 
 - name: delete record from DNS
   uri:
@@ -126,7 +139,7 @@
   when:
     - zone_id is defined
     - record_delete
-    - record_id is defined
+    - record_id != ""
   delegate_to: localhost
 
 - name: print delete_record_result

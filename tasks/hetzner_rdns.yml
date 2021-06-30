@@ -1,35 +1,39 @@
 ---
 #dedicated server
-  - name: set rdns for hetzner hosts
-    when: hetzner_rdns_flavor_cloud|bool == false
-    block:
-    - name: get current rdns entry
-      uri:
-        user: "{{ hetzner_ws_user }}"
-        password: "{{ hetzner_ws_pw }}"
-        url: "https://robot-ws.your-server.de/rdns/{{ hetzner_server_ip }}"
-        status_code: [200, 404]
-      register: rdns_result
-    - name: update incorrect rdns entry
-      uri:
-        user: "{{ hetzner_ws_user }}"
-        password: "{{ hetzner_ws_pw }}"
-        url: "https://robot-ws.your-server.de/rdns/{{ hetzner_server_ip }}"
-        method: "POST"
-        body_format: form-urlencoded
-        body:
-          ptr: "{{ hetzner_ptr }}"
-        status_code: [200, 201]
-      when: '"rdns" not in rdns_result.json or hetzner_ptr != rdns_result.json.rdns.ptr'
-      changed_when: True
-    delegate_to: localhost
+- name: set rdns for hetzner hosts
+  when: hetzner_rdns_flavor_cloud|bool == false
+  block:
+  - name: get current rdns entry
+    uri:
+      user: "{{ hetzner_ws_user }}"
+      password: "{{ hetzner_ws_pw }}"
+      url: "https://robot-ws.your-server.de/rdns/{{ hetzner_server_ip }}"
+      status_code: [200, 404]
+    register: rdns_result
+  - name: update incorrect rdns entry
+    uri:
+      user: "{{ hetzner_ws_user }}"
+      password: "{{ hetzner_ws_pw }}"
+      url: "https://robot-ws.your-server.de/rdns/{{ hetzner_server_ip }}"
+      method: "POST"
+      body_format: form-urlencoded
+      body:
+        ptr: "{{ hetzner_ptr }}"
+      status_code: [200, 201]
+    when: '"rdns" not in rdns_result.json or hetzner_ptr != rdns_result.json.rdns.ptr'
+    changed_when: True
+  delegate_to: localhost
+
+# - name: debug
+#   debug:
+#     msg: "server: {{ hetzner_server_name }} token: {{ hetzner_cloud_api_token }} ip: {{ hetzner_server_ip }} dns_ptr: {{ hetzner_ptr }}"
 
 #cloud server
 - name: Create a reverse DNS entry for a server
   when: hetzner_rdns_flavor_cloud|bool == true
   hcloud_rdns:
     server: "{{ hetzner_server_name }}"
-    api_token: "{{ api_token }}"
+    api_token: "{{ hetzner_cloud_api_token }}"
     #floating_ip: "{{ hetzner_floating_ip }}"
     ip_address: "{{ hetzner_server_ip }}"
     dns_ptr: "{{ hetzner_ptr }}"
