@@ -7,6 +7,7 @@
       Auth-API-Token: "{{ api_token }}"
       Content-Type: application/json; charset=utf-8
   register: api_result
+  delegate_to: localhost
 
 # - name: print records
 #   debug:
@@ -17,6 +18,7 @@
     zone_id: "{{ item.id }}"
   loop: "{{ api_result.json.zones }}"
   when: item.name == zone|string
+  delegate_to: localhost
 
 - name: get zone records from DNS
   when: zone_id is defined
@@ -27,11 +29,13 @@
       Auth-API-Token: "{{ api_token }}"
       Content-Type: application/json; charset=utf-8
   register: all_zone_records
+  delegate_to: localhost
 
 - name: Zone not found
   debug:
     msg: searched for "{{ zone }}"
   when: zone_id is not defined
+  delegate_to: localhost
 
 # - name: print records
 #   debug:
@@ -42,6 +46,7 @@
     record_id: "{{ item.id }}"
   loop: "{{ all_zone_records.json.records }}"
   when: all_zone_records is defined and item.name == record_name|string and item.value == record_value|string and item.type == record_type|string
+  delegate_to: localhost
 
 # - name: print record id
 #   debug:
@@ -68,6 +73,7 @@
   when:
     - not record_delete
     - record_id is not defined
+  delegate_to: localhost
 
 - name: print create_record_result
   debug:
@@ -75,6 +81,7 @@
   when:
     - not record_delete
     - create_record_result is defined
+  delegate_to: localhost    
 
 - name: update record on DNS
   uri:
@@ -97,6 +104,7 @@
     - record_update
     - not record_delete
     - record_id is defined
+  delegate_to: localhost
 
 - name: print update_record_result
   debug:
@@ -105,6 +113,7 @@
     - record_update
     - not record_delete
     - update_record_result is defined
+  delegate_to: localhost
 
 - name: delete record from DNS
   uri:
@@ -118,6 +127,7 @@
     - zone_id is defined
     - record_delete
     - record_id is defined
+  delegate_to: localhost
 
 - name: print delete_record_result
   debug:
@@ -125,3 +135,4 @@
   when:
     - record_delete
     - delete_record_result is defined
+  delegate_to: localhost

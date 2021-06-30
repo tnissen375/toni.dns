@@ -1,6 +1,18 @@
 ---
 user: "root"
 user_path: "/root"
+record_ttl: 180
+#valid: "A" "AAAA" "NS" "MX" "CNAME" "RP" "TXT" "SOA" "HINFO" "SRV" "DANE" "TLSA" "DS" "CAA"
+record_type: A
+record_delete: false
+record_update: false    
+
+# Mail
+#record_name: "@"
+#record_value: 10 mail.toni-media.de.
+#record_type: MX
+#record_ttl: 300
+
 dns_provider: "hetzner"
 api_token: !vault |
           $ANSIBLE_VAULT;1.2;AES256;dns
@@ -10,13 +22,16 @@ api_token: !vault |
           3638326466613230650a363461636366663564656436313738363538396632356539326533353036
           63373336313437373937303761393065386533396563303935373365376238303666643737306565
           3630646138383865336330616335373737613064303630303963
-record_ttl: 180
-#valid: "A" "AAAA" "NS" "MX" "CNAME" "RP" "TXT" "SOA" "HINFO" "SRV" "DANE" "TLSA" "DS" "CAA"
-record_type: A
-record_delete: false
-record_update: false    
 
-#record_name: "@"
-#record_value: 10 mail.toni-media.de.
-#record_type: MX
-#record_ttl: 300
+
+hetzner_rdns_flavor_cloud: true
+# RDNS dedicated & cloud
+hetzner_ws_user:
+hetzner_ws_pw:
+hetzner_server_ip:
+hetzner_ptr:
+
+# RDNS cloud service
+# ansible-galaxy collection install hetzner.hcloud // on ansible machine
+hetzner_server_name:
+hetzner_floating_ip: not used
