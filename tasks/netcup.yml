@@ -1,0 +1,23 @@
+---
+- name: Create a record of type A
+  community.general.netcup_dns:
+    api_key:  "{{ nc_api_key }}"
+    api_password:  "{{ nc_api_password }}"
+    customer_id: "{{ nc_customer_id }}"
+    domain:  "{{ nc_domain }}"
+    name: "{{ record_name }}"
+    type: "{{ record_type }}"
+    value: "{{ record_value }}"
+    #priority: ""
+    solo: true
+
+- name: Delete that record
+  community.general.netcup_dns:
+    api_key:  "{{ nc_api_key }}"
+    api_password:  "{{ nc_api_password }}"
+    customer_id: "{{ nc_customer_id }}"
+    domain:  "{{ nc_domain }}"
+    name: "{{ record_name }}"
+    type: "{{ record_type }}"
+    value: "{{ record_value }}"
+    state: absent
